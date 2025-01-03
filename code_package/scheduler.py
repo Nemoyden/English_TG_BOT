@@ -3,7 +3,6 @@ import schedule
 import time
 
 class Scheduler(Thread):
-    "Класс для планирования и выполнения задач по расписанию"
 
     def __init__(self, updater, data_handler):
         super().__init__()
@@ -12,14 +11,12 @@ class Scheduler(Thread):
         self.daemon = True
 
     def run(self):
-        "Запуск планировщика"
         schedule.every(1).minutes.do(self.send_daily_quiz)
         while True:
             schedule.run_pending()
             time.sleep(1)
 
     def send_daily_quiz(self):
-        "Отправка ежедневного квиза пользователям"
         from datetime import datetime
         now_time = datetime.now().strftime('%H:%M')
         for user_id in self.data_handler.get_all_users():
