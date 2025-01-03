@@ -18,7 +18,6 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 data_handler = DataHandler()
 
 def start(update: Update, context: CallbackContext):
-    """Команда /start - приветствие и выбор сложности."""
     update.message.reply_text(
         "Привет! Я бот для изучения английских слов. Пожалуйста, выберите уровень сложности:",
         reply_markup=InlineKeyboardMarkup([
@@ -29,7 +28,6 @@ def start(update: Update, context: CallbackContext):
     )
 
 def set_difficulty(update: Update, context: CallbackContext):
-    "Установка сложности и отправка квиза"
     query = update.callback_query
     query.answer()
     difficulty = query.data.split('_')[-1]
@@ -37,7 +35,6 @@ def set_difficulty(update: Update, context: CallbackContext):
     send_quiz(context.bot, query.message.chat_id, difficulty)
 
 def send_quiz(bot, chat_id, difficulty=None):
-    "Отправка квиза пользователю"
     if not difficulty:
         difficulty = 'easy'  
     word_entry = data_handler.get_random_word(difficulty)
@@ -55,7 +52,6 @@ def send_quiz(bot, chat_id, difficulty=None):
     )
 
 def handle_answer(update: Update, context: CallbackContext):
-    "Обработка ответа пользователя"
     query = update.callback_query
     query.answer()
     selected_translation = query.data.split('_')[1]
@@ -66,7 +62,6 @@ def handle_answer(update: Update, context: CallbackContext):
         query.edit_message_text(f"Неправильно. Правильный ответ: {correct_translation}")
 
 def add_word(update: Update, context: CallbackContext):
-    "Добавление нового слова в пользовательский банк"
     try:
         _, word, translation = update.message.text.split(' ', 2)
         data_handler.add_word('user_words', word, translation)
@@ -75,7 +70,6 @@ def add_word(update: Update, context: CallbackContext):
         update.message.reply_text("Пожалуйста, используйте формат: /add слово перевод")
 
 def set_quiz_time(update: Update, context: CallbackContext):
-    "Установка времени ежедневного квиза"
     try:
         _, time_str = update.message.text.strip().split(' ')
         data_handler.set_user_quiz_time(update.effective_user.id, time_str)
@@ -84,24 +78,17 @@ def set_quiz_time(update: Update, context: CallbackContext):
         update.message.reply_text("Пожалуйста, используйте формат: /set_time ЧЧ:ММ")
 
 def main():
-    "Главная функция для запуска бота"
     updater = Updater(TOKEN)
     dispatcher = updater.dispatcher
-
-    # Команды
     dispatcher.add_handler(CommandHandler('start', start))
     dispatcher.add_handler(CommandHandler('add', add_word))
     dispatcher.add_handler(CommandHandler('set_time', set_quiz_time))
-
-    # Обработчики CallbackQuery
     dispatcher.add_handler(CallbackQueryHandler(set_difficulty, pattern='set_difficulty_.*'))
     dispatcher.add_handler(CallbackQueryHandler(handle_answer, pattern='answer_.*'))
 
-    # Запуск планировщика
     scheduler = Scheduler(updater, data_handler)
     scheduler.start()
 
-    # Запуск бота
     updater.start_polling()
     updater.idle()
 
