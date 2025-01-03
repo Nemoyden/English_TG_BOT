@@ -1,5 +1,5 @@
 def generate_options(correct_translation, all_translations):
-    """Генерируем список вариантов ответа."""
+    "Генерируем список вариантов ответа"
     import random
     options = [correct_translation]
     while len(options) < 4:
